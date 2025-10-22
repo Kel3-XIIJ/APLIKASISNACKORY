@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snackory - Teman Ngemil Santai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #fce4ec; /* Light Pink */
+        }
+        .container {
+            max-width: 1200px;
+        }
+        .product-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .order-button {
+            transition: transform 0.2s ease;
+        }
+        .order-button:hover {
+            transform: scale(1.05);
+        }
+        .promo-item {
+            transition: transform 0.3s ease;
+        }
+        .promo-item:hover {
+            transform: translateY(-5px);
+        }
+        /* Custom styles for modal */
+        .modal {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 24px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 576px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            /* Penyesuaian Responsif untuk Modal: Memastikan konten modal dapat di-scroll */
+            max-height: 90vh; /* Batasi tinggi modal agar tidak melebihi layar */
+            overflow-y: auto; /* Aktifkan scrolling vertikal jika konten melebihi batas tinggi */
+        }
+    </style>
+</head>
+<body class="bg-pink-50">
+
+    <!-- Header (Responsif: Stacked on Mobile, Side-by-side on MD+) -->
+    <header class="bg-pink-400 text-white py-12 px-4 shadow-lg">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center text-center md:text-left">
+            <div class="mb-4 md:mb-0">
+                <h1 class="text-5xl font-bold tracking-wider">Snackory</h1>
+                <p class="text-xl mt-2 font-medium">Camilan Lezat, Bikin Harimu Bersemangat!</p>
+            </div>
+            <div class="flex space-x-4">
+                <button id="cart-button" class="bg-white text-pink-500 py-3 px-6 rounded-full font-bold shadow-md hover:bg-gray-100 transition-colors">
+                    Keranjang (<span id="cart-count">0</span>)
+                </button>
+                <button id="dashboard-button" class="bg-white text-purple-500 py-3 px-6 rounded-full font-bold shadow-md hover:bg-gray-100 transition-colors">
+                    Dasbor
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto py-12 px-4">
+        
+        <!-- Menu Section (Responsif: 1-col Mobile, 2-col SM, 4-col LG) -->
+        <section class="mb-16">
+            <h2 class="text-4xl font-bold text-center text-pink-500 mb-12">Snack Aja Dulu!</h2>
+            <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Product cards will be injected here by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Promo Section (Responsif: Flex wrap) -->
+        <section class="bg-white rounded-xl shadow-lg p-8 mb-16">
+            <h2 class="text-3xl font-bold text-center text-pink-500 mb-8">Kenapa Snackory?</h2>
+            <div class="flex flex-wrap justify-center gap-6 text-center">
+                <div class="promo-item p-6 bg-yellow-200 rounded-lg shadow-md flex-1 min-w-[200px]">
+                    <span class="text-5xl">😋</span>
+                    <h3 class="font-bold text-xl mt-4 text-gray-800">Sensasi Rasa Bikin Nagih</h3>
+                    <p class="text-gray-600 text-sm mt-2">Resep rahasia yang bikin kamu ga bisa move on!</p>
+                </div>
+                <div class="promo-item p-6 bg-purple-200 rounded-lg shadow-md flex-1 min-w-[200px]">
+                    <span class="text-5xl">💰</span>
+                    <h3 class="font-bold text-xl mt-4 text-gray-800">Harga Hemat, Kualitas Mantap</h3>
+                    <p class="text-gray-600 text-sm mt-2">Nikmatin camilan enak tanpa bikin dompet nangis.</p>
+                </div>
+                <div class="promo-item p-6 bg-green-200 rounded-lg shadow-md flex-1 min-w-[200px]">
+                    <span class="text-5xl">💯</span>
+                    <h3 class="font-bold text-xl mt-4 text-gray-800">Bersih dan Higienis, Tenang di Hati</h3>
+                    <p class="text-gray-600 text-sm mt-2">Dibuat dengan bahan terbaik, bersih, dan higienis.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="modal fixed inset-0 flex items-center justify-center p-4 hidden">
+        <div class="modal-content">
+            <div id="cart-view">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-pink-500">Keranjang Belanja</h2>
+                    <button id="close-modal" class="text-gray-500 text-3xl font-light hover:text-gray-800">&times;</button>
+                </div>
+                <div id="cart-items" class="max-h-80 overflow-y-auto mb-6">
+                    <!-- Cart items will be displayed here -->
+                </div>
+                <div id="cart-summary" class="text-right font-bold text-xl text-gray-800 mb-6">
+                    Total: <span id="total-price">Rp 0</span>
+                </div>
+
+                <!-- Customer Info and Payment Method Section -->
+                <div id="customer-info" class="mb-6">
+                    <p class="text-lg font-bold text-gray-700 mb-2">Informasi Pengiriman</p>
+                    <div class="mb-4">
+                        <label for="customer-name" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                        <input type="text" id="customer-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm p-2" placeholder="Masukkan nama Anda">
+                    </div>
+                    <div class="mb-4">
+                        <label for="customer-phone" class="block text-sm font-medium text-gray-700">Nomor Telepon</label>
+                        <input type="tel" id="customer-phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm p-2" placeholder="Contoh: 08123456789">
+                    </div>
+                    <div class="mb-4">
+                        <label for="customer-address" class="block text-sm font-medium text-gray-700">Alamat Rumah</label>
+                        <textarea id="customer-address" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm p-2" placeholder="Masukkan alamat lengkap Anda"></textarea>
+                    </div>
+                    <div id="address-error" class="text-red-500 text-sm mt-1 hidden">Mohon isi semua informasi pengiriman.</div>
+                </div>
+
+                <div id="payment-methods" class="mb-6">
+                    <p class="text-lg font-bold text-gray-700 mb-2">Metode Pembayaran</p>
+                    <div class="flex flex-col space-y-2">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="payment-method" value="COD" class="form-radio text-pink-600 h-5 w-5" checked>
+                            <span class="ml-2 text-gray-700">COD (Bayar di Tempat)</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="payment-method" value="DANA" class="form-radio text-pink-600 h-5 w-5">
+                            <span class="ml-2 text-gray-700">DANA</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="payment-method" value="Gopay" class="form-radio text-pink-600 h-5 w-5">
+                            <span class="ml-2 text-gray-700">Gopay</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <button id="checkout-button" class="w-full bg-pink-500 text-white font-bold py-3 rounded-full hover:bg-pink-600 transition-colors">
+                    Checkout
+                </button>
+            </div>
+
+            <div id="confirmation-view" class="hidden text-center p-8">
+                <span class="text-5xl mb-4 block">🎉</span>
+                <h2 class="text-2xl font-bold text-pink-500 mb-2">Pesananmu Berhasil!</h2>
+                <p class="text-gray-600">Terima kasih sudah jajan di Snackory. Silakan konfirmasi pesananmu via WhatsApp.</p>
+                <div class="mt-6 p-4 bg-green-100 rounded-lg">
+                    <p class="text-lg font-semibold text-green-700">Estimasi Pengiriman:</p>
+                    <p id="delivery-estimate" class="text-xl font-bold text-green-800 mt-1"></p>
+                </div>
+                <!-- WhatsApp Confirmation Button -->
+                <a id="whatsapp-confirm-link" href="#" target="_blank" class="block w-full mt-8 bg-green-500 text-white font-bold py-3 px-6 rounded-full hover:bg-green-600 transition-colors">
+                    Konfirmasi Pesanan via WhatsApp
+                </a>
+                <button id="back-to-shop-button" class="w-full mt-4 bg-pink-500 text-white font-bold py-3 px-6 rounded-full hover:bg-pink-600 transition-colors">
+                    Kembali Belanja
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QRIS Modal (Dipakai untuk DANA/Gopay) -->
+    <div id="qris-modal" class="modal fixed inset-0 flex items-center justify-center p-4 hidden">
+        <div class="modal-content">
+            <div class="text-center">
+                <h2 class="text-2xl font-bold text-pink-500 mb-4">Lanjutkan Pembayaran</h2>
+                <p class="text-gray-600 mb-6">Lanjutkan pembayaran melalui aplikasi <span id="payment-app-name" class="font-semibold"></span>.</p>
+                <div class="flex justify-center mb-6">
+                    <!-- Placeholder for QRIS image -->
+                    <img id="qris-code-image" src="" alt="QRIS Code" class="w-64 h-64 rounded-lg shadow-lg">
+                </div>
+                <p class="text-xl font-bold text-purple-600 mb-2">Rp <span id="qris-total-price">0</span></p>
+                <!-- Nomor Telepon Tujuan Pembayaran -->
+                <p class="text-md text-gray-700 font-semibold mb-6">Nomor Tujuan: <span id="qris-phone-number" class="text-pink-600"></span></p>
+                <p class="text-sm text-gray-500 mb-6">Pembayaran akan diverifikasi secara otomatis dalam beberapa menit.</p>
+                <!-- Tombol Deep Link/Konfirmasi -->
+                <a id="qris-confirm-link" href="#" target="_blank" class="w-full block bg-green-500 text-white font-bold py-3 rounded-full hover:bg-green-600 transition-colors mb-2">
+                    Konfirmasi Pembayaran
+                </a>
+                <button id="qris-cancel-button" class="w-full bg-gray-300 text-gray-800 font-bold py-3 rounded-full hover:bg-gray-400 transition-colors">
+                    Batalkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Modal (Responsif: Overflow-x untuk tabel) -->
+    <div id="dashboard-modal" class="modal fixed inset-0 flex items-center justify-center p-4 hidden">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-purple-500">Dasbor Penjual</h2>
+                <button id="close-dashboard-modal" class="text-gray-500 text-3xl font-light hover:text-gray-800">&times;</button>
+            </div>
+            
+            <div class="p-4 bg-purple-100 text-purple-800 rounded-lg mb-6 text-center">
+                <p class="text-lg font-semibold">Total Pesanan Diterima:</p>
+                <p id="total-orders" class="text-4xl font-bold mt-1">0</p>
+            </div>
+
+            <h3 class="text-xl font-bold text-purple-500 mb-4">Riwayat Pesanan</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white rounded-lg shadow-md">
+                    <thead>
+                        <tr class="bg-purple-200 text-purple-800">
+                            <th class="py-2 px-4 text-left">ID Pesanan</th>
+                            <th class="py-2 px-4 text-left">Nama</th>
+                            <th class="py-2 px-4 text-left">Telepon</th>
+                            <th class="py-2 px-4 text-left">Alamat</th>
+                            <th class="py-2 px-4 text-left">Metode Bayar</th>
+                            <th class="py-2 px-4 text-left">Items</th>
+                            <th class="py-2 px-4 text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="order-history-table-body">
+                        <!-- Order history will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-pink-200 text-center py-8">
+        <p class="text-pink-700 font-semibold">&copy; 2025 Snackory. Ngemil santai, hati riang.</p>
+        <p class="text-pink-600 mt-2">Dibuat dengan <span class="text-red-500">&hearts;</span></p>
+        <p class="text-pink-600 mt-2">Kelompok 3 XII-J</p>
+    </footer>
+
+    <script>
+        // Data produk dengan varian rasa
+        const products = [
+            {
+                id: 1,
+                name: "Cookies",
+                description: "Cookies renyah dengan lelehan coklat yang siap bikin mood kamu naik lagi!",
+                price: 8000,
+                image: "https://tse3.mm.bing.net/th/id/OIP.l7e3LFVP62J8TO3UcKRcSwHaLH?pid=Api&h=220&P=0",
+                flavors: ["Matcha", "Coklat", "Red velvet"]
+            },
+            {
+                id: 2,
+                name: "Makaroni",
+                description: "Makaroni kering dengan bumbu spesial yang pedas dan gurih.",
+                price: 5000,
+                image: "https://tse4.mm.bing.net/th/id/OIP.Uas9akDXTAIuZnY37o8_BAHaHa?pid=Api&h=220&P=0",
+                flavors: ["Pedas", "Asin", "Keju", "Jagung bakar"]
+            },
+            {
+                id: 3,
+                name: "Keripik",
+                description: "Keripik kentang renyah dan gurih, teman setia saat santai.",
+                price: 5000,
+                image: "https://tse1.mm.bing.net/th/id/OIP.qz6hltViiJou8goKkZ1BvQHaD4?pid=Api&h=220&P=0",
+                flavors: ["Original", "Balado"]
+            },
+            {
+                id: 4,
+                name: "Basreng Chili Oil",
+                description: "Basreng (bakso goreng) renyah dengan bumbu chili oil pedas, bikin nagih!",
+                price: 6000,
+                image: "https://tse4.mm.bing.net/th/id/OIP.LVjGZrwnJl8d2v4mj_HcewHaHa?pid=Api&h=220&P=0",
+                flavors: ["Chili oil"]
+            }
+        ];
+
+        // Keranjang belanja dan riwayat pesanan
+        let cart = [];
+        let orders = [];
+        const paymentContacts = {
+            DANA: '085781162618',
+            Gopay: '08886345099'
+        };
+
+        // Elemen DOM
+        const productList = document.getElementById('product-list');
+        const cartButton = document.getElementById('cart-button');
+        const dashboardButton = document.getElementById('dashboard-button');
+        const cartModal = document.getElementById('cart-modal');
+        const qrisModal = document.getElementById('qris-modal');
+        const dashboardModal = document.getElementById('dashboard-modal');
+        const closeModalButton = document.getElementById('close-modal');
+        const closeDashboardModalButton = document.getElementById('close-dashboard-modal');
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cartCountSpan = document.getElementById('cart-count');
+        const totalPriceSpan = document.getElementById('total-price');
+        const checkoutButton = document.getElementById('checkout-button');
+        const cartView = document.getElementById('cart-view');
+        const confirmationView = document.getElementById('confirmation-view');
+        const deliveryEstimateSpan = document.getElementById('delivery-estimate');
+        const backToShopButton = document.getElementById('back-to-shop-button');
+        const totalOrdersSpan = document.getElementById('total-orders');
+        const orderHistoryTableBody = document.getElementById('order-history-table-body');
+        const customerNameInput = document.getElementById('customer-name');
+        const customerPhoneInput = document.getElementById('customer-phone');
+        const customerAddressTextarea = document.getElementById('customer-address');
+        const addressErrorDiv = document.getElementById('address-error');
+        const paymentMethodsDiv = document.getElementById('payment-methods');
+        const qrisConfirmLink = document.getElementById('qris-confirm-link');
+        const qrisCancelButton = document.getElementById('qris-cancel-button');
+        const qrisCodeImage = document.getElementById('qris-code-image');
+        const qrisTotalPriceSpan = document.getElementById('qris-total-price');
+        const paymentAppNameSpan = document.getElementById('payment-app-name');
+        const qrisPhoneNumberSpan = document.getElementById('qris-phone-number');
+        const whatsappConfirmLink = document.getElementById('whatsapp-confirm-link');
+
+        // Fungsi untuk merender produk
+        function renderProducts() {
+            productList.innerHTML = '';
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = "product-card bg-white rounded-xl shadow-md p-6 text-center hover:shadow-xl cursor-pointer";
+
+                const flavorOptions = product.flavors.map(flavor => `<option value="${flavor}">${flavor}</option>`).join('');
+
+                productCard.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-cover rounded-lg mb-4">
+                    <h3 class="text-xl font-bold text-pink-600 mb-2">${product.name}</h3>
+                    <p class="text-gray-500 text-sm mb-4 min-h-[50px]">${product.description}</p>
+                    <div class="mb-4">
+                        <label for="flavor-${product.id}" class="block text-sm font-medium text-gray-700">Pilih Rasa:</label>
+                        <select id="flavor-${product.id}" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm rounded-md">
+                            ${flavorOptions}
+                        </select>
+                    </div>
+                    <p class="text-2xl font-bold text-purple-600 mb-4">Rp ${product.price.toLocaleString('id-ID')}</p>
+                    <button class="order-button w-full bg-pink-500 text-white font-semibold py-2 rounded-full hover:bg-pink-600 transition-colors" onclick="addToCart(${product.id})">
+                        Tambahkan ke Keranjang
+                    </button>
+                `;
+                productList.appendChild(productCard);
+            });
+        }
+
+        // Fungsi untuk menambahkan produk ke keranjang
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            const flavorSelect = document.getElementById(`flavor-${productId}`);
+            const selectedFlavor = flavorSelect.value;
+            const cartItemIndex = cart.findIndex(item => item.id === productId && item.flavor === selectedFlavor);
+
+            if (cartItemIndex > -1) {
+                cart[cartItemIndex].quantity++;
+            } else {
+                cart.push({ ...product, quantity: 1, flavor: selectedFlavor });
+            }
+            updateCart();
+        }
+
+        // Fungsi untuk memperbarui tampilan keranjang
+        function updateCart() {
+            cartCountSpan.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartItemsContainer.innerHTML = '';
+            let totalPrice = 0;
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<p class="text-gray-500 text-center">Keranjangmu masih kosong nih!</p>';
+            } else {
+                cart.forEach(item => {
+                    const itemTotal = item.price * item.quantity;
+                    totalPrice += itemTotal;
+                    const cartItemEl = document.createElement('div');
+                    cartItemEl.className = "flex justify-between items-center bg-gray-50 p-4 rounded-lg mb-2";
+                    cartItemEl.innerHTML = `
+                        <div>
+                            <p class="font-semibold text-gray-800">${item.name} <span class="text-sm font-normal text-gray-500">(${item.flavor})</span></p>
+                            <p class="text-sm text-gray-500">${item.quantity} x Rp ${item.price.toLocaleString('id-ID')}</p>
+                        </div>
+                        <p class="font-bold text-pink-500">Rp ${itemTotal.toLocaleString('id-ID')}</p>
+                    `;
+                    cartItemsContainer.appendChild(cartItemEl);
+                });
+            }
+
+            totalPriceSpan.textContent = `Rp ${totalPrice.toLocaleString('id-ID')}`;
+        }
+        
+        // Fungsi untuk mendapatkan estimasi pengiriman
+        function getEstimatedDelivery() {
+            const days = Math.floor(Math.random() * 2) + 2; // Random 2 or 3
+            return `${days} hari kerja`;
+        }
+        
+        // Fungsi untuk merender dasbor
+        function renderDashboard() {
+            totalOrdersSpan.textContent = orders.length;
+            orderHistoryTableBody.innerHTML = '';
+
+            if (orders.length === 0) {
+                orderHistoryTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">Belum ada pesanan yang masuk.</td></tr>';
+            } else {
+                orders.forEach(order => {
+                    const orderRow = document.createElement('tr');
+                    orderRow.className = "border-b border-gray-200";
+                    const itemNames = order.items.map(item => `${item.name} (${item.flavor}) x ${item.quantity}`).join(', ');
+                    orderRow.innerHTML = `
+                        <td class="py-2 px-4 text-sm">${order.id}</td>
+                        <td class="py-2 px-4 text-sm">${order.customerName}</td>
+                        <td class="py-2 px-4 text-sm">${order.customerPhone}</td>
+                        <td class="py-2 px-4 text-sm">${order.customerAddress}</td>
+                        <td class="py-2 px-4 text-sm">${order.paymentMethod}</td>
+                        <td class="py-2 px-4 text-sm text-gray-600">${itemNames}</td>
+                        <td class="py-2 px-4 text-right font-semibold">Rp ${order.total.toLocaleString('id-ID')}</td>
+                    `;
+                    orderHistoryTableBody.appendChild(orderRow);
+                });
+            }
+        }
+
+        // --- Event Listeners ---
+        cartButton.addEventListener('click', () => {
+            cartModal.classList.remove('hidden');
+            cartView.classList.remove('hidden');
+            confirmationView.classList.add('hidden');
+            qrisModal.classList.add('hidden');
+        });
+
+        closeModalButton.addEventListener('click', () => {
+            cartModal.classList.add('hidden');
+        });
+
+        checkoutButton.addEventListener('click', () => {
+            const customerName = customerNameInput.value.trim();
+            const customerPhone = customerPhoneInput.value.trim();
+            const customerAddress = customerAddressTextarea.value.trim();
+            const selectedPaymentMethod = document.querySelector('input[name="payment-method"]:checked').value;
+
+            // Validation: check if cart is empty and if all info are filled
+            if (cart.length === 0) {
+                addressErrorDiv.classList.add('hidden');
+                cartItemsContainer.innerHTML = '<p class="text-center text-red-500">Keranjang belanja masih kosong, nih. Yuk, isi dulu!</p>';
+                return;
+            }
+            if (!customerName || !customerPhone || !customerAddress) {
+                addressErrorDiv.classList.remove('hidden');
+                return;
+            } else {
+                addressErrorDiv.classList.add('hidden');
+            }
+
+            const orderTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            if (selectedPaymentMethod === 'COD') {
+                finalizeOrder('COD', customerName, customerPhone, customerAddress, orderTotal);
+                // After finalizing, we show the confirmation screen
+                cartModal.classList.remove('hidden');
+                cartView.classList.add('hidden');
+                confirmationView.classList.remove('hidden');
+            } else { // DANA and Gopay
+                // Show QRIS modal for DANA and Gopay
+                cartModal.classList.add('hidden');
+                qrisModal.classList.remove('hidden');
+                qrisTotalPriceSpan.textContent = orderTotal.toLocaleString('id-ID');
+                paymentAppNameSpan.textContent = selectedPaymentMethod;
+
+                const phoneNumber = paymentContacts[selectedPaymentMethod];
+                qrisPhoneNumberSpan.textContent = phoneNumber;
+
+                let qrisUrl;
+                let qrisLink;
+                if (selectedPaymentMethod === 'DANA') {
+                    qrisUrl = 'https://placehold.co/300x300/167ac3/fff?text=Pindai+DANA';
+                    // Link deep link yang tidak selalu berfungsi dari web, tapi disertakan sebagai usaha
+                    qrisLink = 'dana://transfer?to=' + phoneNumber; 
+                } else if (selectedPaymentMethod === 'Gopay') {
+                    qrisUrl = 'https://placehold.co/300x300/008c4e/fff?text=Pindai+Gopay';
+                    // Link deep link yang tidak selalu berfungsi dari web, tapi disertakan sebagai usaha
+                    qrisLink = 'gojek://gopay/transfer?to=' + phoneNumber;
+                }
+
+                qrisCodeImage.src = qrisUrl;
+                qrisConfirmLink.href = qrisLink;
+                qrisConfirmLink.textContent = `Buka Aplikasi ${selectedPaymentMethod}`;
+            }
+        });
+        
+        qrisConfirmLink.addEventListener('click', () => {
+            const customerName = customerNameInput.value.trim();
+            const customerPhone = customerPhoneInput.value.trim();
+            const customerAddress = customerAddressTextarea.value.trim();
+            const selectedPaymentMethod = document.querySelector('input[name="payment-method"]:checked').value;
+            const orderTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            // Finalize order after user clicks the deep link
+            finalizeOrder(`QRIS ${selectedPaymentMethod}`, customerName, customerPhone, customerAddress, orderTotal);
+            
+            // Hide QRIS modal and show confirmation view
+            qrisModal.classList.add('hidden');
+            cartModal.classList.remove('hidden');
+            cartView.classList.add('hidden');
+            confirmationView.classList.remove('hidden');
+        });
+
+        qrisCancelButton.addEventListener('click', () => {
+            qrisModal.classList.add('hidden');
+            cartModal.classList.remove('hidden'); // Go back to the cart view
+        });
+
+        backToShopButton.addEventListener('click', () => {
+            cartModal.classList.add('hidden');
+            cart = [];
+            updateCart();
+            customerNameInput.value = '';
+            customerPhoneInput.value = '';
+            customerAddressTextarea.value = '';
+        });
+
+        dashboardButton.addEventListener('click', () => {
+            dashboardModal.classList.remove('hidden');
+            renderDashboard();
+        });
+
+        closeDashboardModalButton.addEventListener('click', () => {
+            dashboardModal.classList.add('hidden');
+        });
+
+        // Finalize order and show confirmation view
+        function finalizeOrder(paymentMethod, customerName, customerPhone, customerAddress, orderTotal) {
+            const orderId = `SNK-${Date.now()}`;
+            const newOrder = {
+                id: orderId,
+                customerName,
+                customerPhone,
+                customerAddress,
+                paymentMethod,
+                items: [...cart],
+                total: orderTotal
+            };
+            orders.push(newOrder);
+
+            let phoneNumber = '';
+            if (paymentMethod.includes('DANA')) {
+                phoneNumber = paymentContacts.DANA;
+            } else if (paymentMethod.includes('Gopay')) {
+                phoneNumber = paymentContacts.Gopay;
+            }
+
+            // Membuat pesan WhatsApp dengan detail pesanan
+            let whatsappMessage = `Halo, saya ingin memesan dari Snackory.\n\n` +
+                                  `*Detail Pesanan:*\n` +
+                                  `ID Pesanan: ${orderId}\n` +
+                                  `Nama: ${customerName}\n` +
+                                  `Telepon: ${customerPhone}\n` +
+                                  `Alamat: ${customerAddress}\n\n` +
+                                  `*Daftar Produk:*\n` +
+                                  `${cart.map(item => `- ${item.name} (${item.flavor}) x ${item.quantity}`).join('\n')}\n\n` +
+                                  `*Total Pembayaran:*\n` +
+                                  `Rp ${orderTotal.toLocaleString('id-ID')}\n\n` +
+                                  `*Metode Pembayaran:*\n` +
+                                  `${paymentMethod}\n`;
+
+            if (phoneNumber) {
+                whatsappMessage += `\n*Nomor Tujuan Pembayaran:*\n${phoneNumber}\n`;
+            }
+            whatsappMessage += `\nMohon diproses, terima kasih!`;
+
+            const encodedMessage = encodeURIComponent(whatsappMessage);
+            const whatsappUrl = `https://wa.me/+6285147859621?text=${encodedMessage}`;
+            
+            // Set href for the WhatsApp button
+            whatsappConfirmLink.href = whatsappUrl;
+
+            // Get and display estimated delivery time
+            deliveryEstimateSpan.textContent = getEstimatedDelivery();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts();
+            updateCart();
+        });
+    </script>
+</body>
+</html>
